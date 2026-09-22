@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f8fa">
+<meta name="description" content="VitaSense Lab — painel ambiental experimental ESP32 e HiveMQ Cloud. Não é um dispositivo médico.">
+<title>VitaSense Lab · Monitoramento ambiental</title>
+<style>
+:root{color-scheme:light;--navy:#153142;--ink:#1e3b4c;--muted:#718a99;--teal:#008f83;--teal2:#2ac2aa;--aqua:#dff7f3;--blue:#426ce3;--light:#f3f8fa;--line:#e4ecf0;--card:#fff;--amber:#b67a24;--red:#c94f56;--radius:24px;--shadow:0 18px 52px rgba(35,82,104,.06);font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--light);color:var(--ink);min-height:100vh}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.43}a{text-decoration:none;color:inherit}svg{display:block}::selection{background:#b5eae1;color:#163b44}:focus-visible{outline:3px solid #49b7ae;outline-offset:3px}
+.app{display:grid;grid-template-columns:252px minmax(0,1fr);max-width:1780px;margin:auto;min-height:100vh}.sidebar{background:#fff;border-right:1px solid var(--line);height:100vh;position:sticky;top:0;padding:30px 19px 23px;display:flex;flex-direction:column;gap:39px;z-index:5}.logo{display:flex;gap:12px;align-items:center;padding:2px 10px}.logo-icon{height:48px;width:48px;border-radius:16px;background:#0c9586;color:#fff;display:grid;place-items:center;box-shadow:0 13px 23px #008f8338}.logo-icon svg{width:29px;height:29px;stroke:currentColor;stroke-width:2;fill:none}.logo strong{display:block;font-family:Manrope,sans-serif;font-size:21px;letter-spacing:-1.3px;line-height:1.15;color:#17394b}.logo strong span{color:#08998b}.logo small{font-size:10px;color:#93a5ae;font-weight:800;letter-spacing:2.1px}.nav-caption{color:#a4b3bc;font-size:10px;letter-spacing:2px;font-weight:800;margin:0 13px 11px}.navigation{display:grid;gap:6px}.navigation a{display:flex;align-items:center;gap:12px;padding:13px;border-radius:12px;color:#78909b;font-size:13px;font-weight:700;transition:background .2s,color .2s}.navigation a:hover,.navigation a.active{background:#e8f7f3;color:#078779}.navigation a.active{box-shadow:inset 3px 0 #0ca28f}.navigation svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.8;fill:none}.sidebar-note{margin-top:auto;background:linear-gradient(150deg,#e7f9f4,#f1f9fc);border:1px solid #caeae2;border-radius:19px;padding:18px 16px;font-size:12px;line-height:1.7;color:#577a83}.sidebar-note .note-mark{width:32px;height:32px;display:grid;place-items:center;background:#fff;border-radius:12px;color:#008f83;margin-bottom:11px}.sidebar-note strong{display:block;color:#124e4e;margin-bottom:5px;font-size:13px}
+.main{min-width:0;padding:24px clamp(18px,3.2vw,50px) 40px}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:26px}.breadcrumb{font-size:12px;color:#94a7b2;font-weight:600}.breadcrumb strong{color:#315466}.top-right{display:flex;align-items:center;gap:14px}.clock{font-size:12px;color:#7f98a5;font-weight:800;white-space:nowrap}.pill{display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.7px;font-weight:900;border:1px solid #e1e9ef;color:#8b9aa5;background:#fff;border-radius:50px;padding:9px 12px;white-space:nowrap}.pill .dot{width:8px;height:8px;border-radius:50%;background:#a4b4bd}.pill.live{color:#078e76;background:#e7f8f0;border-color:#c4e9d8}.pill.live .dot{background:#16b58a;box-shadow:0 0 0 4px #16b58a1b;animation:pulse 2s infinite}.pill.demo{color:#765aab;background:#f4efff;border-color:#ded2fb}.pill.demo .dot{background:#a47bec}.pill.warn{color:#a86d25;background:#fff7e7;border-color:#f5deb0}.pill.warn .dot{background:#e7a83f;animation:pulse 1.5s infinite}
+.hero{background:linear-gradient(122deg,#fff,#f1fbf9 72%,#e6f7f4);border:1px solid #d7ebe6;border-radius:30px;min-height:318px;display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.82fr);position:relative;overflow:hidden;box-shadow:var(--shadow)}.hero:before{content:"";position:absolute;width:490px;height:490px;border:1px solid #7acfc52f;border-radius:50%;right:-100px;top:-125px;box-shadow:0 0 0 50px #7acfc510,0 0 0 100px #7acfc507;pointer-events:none}.hero-copy{padding:clamp(26px,3.8vw,52px);align-self:center;position:relative;z-index:1}.eyebrow{font-size:10px;color:#0b9c8b;font-weight:900;letter-spacing:2.25px;text-transform:uppercase}.hero h1{font:800 clamp(31px,3.15vw,48px)/1.14 Manrope,sans-serif;letter-spacing:-2.2px;color:#163949;margin:17px 0 14px;max-width:600px}.hero h1 span{color:#0eaa97}.hero p{line-height:1.75;color:#698b94;font-size:13px;margin:0;max-width:470px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 16px;background:#fff;color:#285266;border:1px solid #d9e8e9;font-size:12px;font-weight:800;transition:transform .2s,box-shadow .2s,background .2s;min-height:43px}.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 25px #163c4514}.btn.primary{background:#0c9888;border-color:#0c9888;color:#fff;box-shadow:0 10px 20px #05998925}.btn.primary:hover:not(:disabled){background:#087f74}.btn.danger{background:#fff;border-color:#f0d5d5;color:#bf565b}.btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}.hero-monitor{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative;padding:30px 19px}.monitor-orbit{width:228px;height:228px;border:1px dashed #a5d9ce;position:absolute;border-radius:50%;animation:turn 34s linear infinite}.monitor-orbit:after{content:"";position:absolute;top:-5px;left:50%;background:#0bb29f;border:4px solid #fff;width:11px;height:11px;border-radius:50%;box-shadow:0 3px 10px #0bb29f44}.monitor-core{width:178px;height:178px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 34% 27%,#fff 3%,#e8fbf7 62%,#ccece6);box-shadow:0 20px 40px #0aa29318,0 0 0 16px #d7f4ef95,inset 0 -6px 25px #b3e3d8;position:relative;animation:breath 5s ease-in-out infinite}.monitor-core svg{width:93px;height:70px;stroke:#119c8c;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 4px 7px #0baa971f)}.monitor-core .heart-line{stroke-dasharray:none;stroke-dashoffset:0;animation:waveGlow 3s ease-in-out infinite}.monitor-caption{font-size:10px;color:#78a39e;letter-spacing:1.5px;font-weight:800;position:relative;text-align:center}.floating{position:absolute;z-index:2;padding:11px 13px;background:#fffef8;border:1px solid #e1f0e8;border-radius:13px;box-shadow:0 14px 33px #1b6e6530;font-size:10px;color:#7b989d;animation:rise 5s ease-in-out infinite}.floating strong{display:block;color:#184353;font:800 17px Manrope,sans-serif;margin-top:3px}.floating.f1{left:0;top:23%}.floating.f2{right:2%;bottom:25%;animation-delay:-2s}
+.safety-banner{display:flex;align-items:start;gap:11px;padding:14px 17px;background:#fff9ec;color:#775c32;border:1px solid #f6e6c0;border-radius:15px;margin-top:16px;font-size:12px;line-height:1.65}.safety-banner svg{flex:0 0 19px;width:19px;height:19px;stroke:#c5903c;stroke-width:2;fill:none;margin-top:1px}.safety-banner b{color:#79521e}.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:31px 0 15px}.section-head h2{font:800 clamp(19px,2.2vw,24px) Manrope,sans-serif;letter-spacing:-.9px;margin:5px 0 0;color:#204454}.section-head .sub{color:#94a8b2;font-size:12px;text-align:right;line-height:1.5}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.card{background:var(--card);border:1px solid #e6eef0;border-radius:22px;box-shadow:var(--shadow);min-width:0}.metric{padding:21px;transition:transform .2s,border-color .2s}.metric:hover{transform:translateY(-3px);border-color:#c1e3dc}.metric-header{display:flex;justify-content:space-between;align-items:center}.metric-icon{display:grid;place-items:center;background:#e7f8f3;width:42px;height:42px;border-radius:14px;color:#0a9a88}.metric-icon.blue{background:#eaf1ff;color:#537edb}.metric-icon.violet{background:#f2edff;color:#866bc3}.metric-icon.gold{background:#fff4e5;color:#bb8d3c}.metric-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8}.tag{font-size:10px;color:#a0b0bb;font-weight:900;letter-spacing:1px}.metric-label{font-size:12px;color:#76919d;margin:18px 0 4px;font-weight:700}.metric-val{font:800 clamp(27px,2.8vw,37px) Manrope,sans-serif;letter-spacing:-1.6px;color:#173e4c;white-space:nowrap}.metric-val small{font-size:15px;letter-spacing:0;color:#8aa4ad;margin-left:5px}.metric-foot{display:flex;align-items:center;justify-content:space-between;gap:7px;font-size:10px;color:#94abb3;margin-top:14px;min-height:25px}.spark{width:75px;height:26px;flex-shrink:0}.spark path{fill:none;stroke:#16b19b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.metric:nth-child(2) .spark path{stroke:#4e84df}
+.grid-two{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(315px,.84fr);gap:16px}.chart-card,.equipment,.connection,.events,.table-card{padding:24px}.panel-head{display:flex;align-items:start;justify-content:space-between;gap:15px}.panel-head h3{font:800 16px Manrope,sans-serif;color:#1e4353;letter-spacing:-.5px;margin:0 0 5px}.panel-head p{font-size:11px;color:#9badb6;margin:0;line-height:1.55}.segmented{background:#f1f6f6;border-radius:11px;padding:3px;display:flex;gap:2px}.segmented button{border:0;background:transparent;border-radius:9px;padding:9px 11px;font-weight:800;font-size:10px;color:#8aa3ad}.segmented button.selected{background:#fff;color:#008e81;box-shadow:0 2px 9px #244e4c10}.chart-number{display:flex;align-items:baseline;gap:8px;margin-top:25px}.chart-number strong{font:800 35px Manrope,sans-serif;letter-spacing:-1.5px;color:#1a4855}.chart-number span{font-size:11px;color:#9aaeb7}.chart-area{height:220px;margin:0 -7px}.chart-svg{width:100%;height:100%;overflow:visible}.grid-line{fill:none;stroke:#e9eff0;stroke-dasharray:5 7;stroke-width:1}.chart-line{fill:none;stroke:#0fae9b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s}.chart-point{fill:#fff;stroke:#0fae9b;stroke-width:3}.chart-legend{display:flex;justify-content:space-between;gap:7px;color:#9bb0b8;font-size:10px;font-weight:700}.chart-hint{font-size:10px;color:#a4b4ba;margin-top:17px;line-height:1.6}.device-visual{height:208px;display:grid;place-items:center;position:relative}.device-visual:before{content:"";position:absolute;width:188px;height:188px;background:radial-gradient(circle,#e8faf6,transparent 70%);border-radius:50%}.device-visual svg{position:relative;width:242px;max-width:100%;height:180px}.servo-track{stroke:#e9f1f1;stroke-width:14;stroke-linecap:round;fill:none}.servo-arc{stroke:#19aa96;stroke-width:14;stroke-linecap:round;fill:none;transition:stroke-dashoffset .7s cubic-bezier(.2,.8,.2,1)}.servo-degree{font:800 42px Manrope,sans-serif;fill:#28505e;text-anchor:middle}.servo-degree-sub{font:800 10px DM Sans,sans-serif;fill:#a0b1ba;text-anchor:middle;letter-spacing:2px}.servo-mark{font:800 11px DM Sans,sans-serif;fill:#9caeb9}.leds{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.led{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 4px;background:#f5f8f9;color:#93a7b1;font-size:9px;font-weight:900;border:1px solid #edf1f2;border-radius:10px}.led i{display:block;width:8px;height:8px;background:#bbc9cc;border-radius:50%}.led.green.active{background:#e2faf0;border-color:#a6e8cb;color:#128766}.led.green.active i{background:#21bd84;box-shadow:0 0 0 4px #21bd841b}.led.yellow.active{background:#fff7df;border-color:#f2dc90;color:#ad7b20}.led.yellow.active i{background:#e9b03a;box-shadow:0 0 0 4px #e9b03a1e}.led.red.active{background:#fff0f0;border-color:#f3c7c7;color:#bb5c5c}.led.red.active i{background:#e46c75;box-shadow:0 0 0 4px #e46c751e}.micro-note{font-size:10px;color:#94aab4;line-height:1.7;margin:15px 0 0}.reading-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:15px}.reading-table th{text-align:left;font-size:10px;letter-spacing:.7px;color:#9eb1ba;font-weight:800;background:#f6faf9;padding:12px}.reading-table td{padding:13px 12px;color:#385e69;border-bottom:1px solid #f0f3f3;font-weight:700}.reading-table tbody tr:last-child td{border-bottom:none}.reading-table .empty-row td{text-align:center;color:#a1b1b8;padding:25px 12px;font-weight:500}.reading-table tr.demo-row{background:#faf7ff}.small-badge{font-size:9px;color:#648f8a;background:#e7f8f4;padding:5px 7px;border-radius:7px}.small-badge.sim{background:#f2ebff;color:#8561ad}.table-scroller{overflow:auto}.table-scroller table{min-width:520px}.lower{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(290px,.8fr);gap:16px}.connection{scroll-margin-top:20px}.connection-head{display:flex;justify-content:space-between;gap:10px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}.field{min-width:0}.field.wide{grid-column:1/-1}.field label{display:block;font-size:10px;color:#819aa6;font-weight:900;letter-spacing:.7px;margin-bottom:7px}.field input{width:100%;height:44px;border:1px solid #e2eaed;border-radius:11px;background:#f9fcfc;padding:11px 13px;color:#254c5b;font-size:12px;outline:none;min-width:0}.field input:focus{border-color:#37b4a3;box-shadow:0 0 0 3px #32b19a16}.password-wrap{position:relative}.password-wrap input{padding-right:48px}.eye{position:absolute;right:5px;top:4px;height:36px;width:37px;background:none;border:0;color:#8095a0}.form-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.hint{color:#9caeb7;font-size:10px;line-height:1.7;margin:14px 0 0}.hint strong{color:#55878a}.error{color:#c14c52;font-size:11px;line-height:1.6;min-height:0;margin-top:8px;font-weight:700}.error:empty{display:none}.event-list{list-style:none;padding:0;margin:17px 0 0;display:grid;gap:12px;max-height:380px;overflow:auto}.event-list li{display:grid;grid-template-columns:9px 1fr auto;gap:9px;align-items:start;padding-bottom:13px;border-bottom:1px solid #eef3f4}.event-list li:last-child{border-bottom:0}.event-mark{width:8px;height:8px;margin-top:5px;border-radius:50%;background:#a9b5bc}.event-mark.good{background:#28b696}.event-mark.bad{background:#e4a04d}.event-copy{font-size:11px;color:#6c8794;line-height:1.6}.event-time{font-size:9px;color:#acbbc4;white-space:nowrap}.events .btn{padding:8px 10px;min-height:35px}.footer{margin-top:30px;color:#a0b2bc;font-size:11px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid #e0eaed;padding-top:21px}.footer strong{color:#298477}.mobile-nav{display:none}
+@keyframes pulse{50%{box-shadow:0 0 0 7px #16b58a0a}}@keyframes turn{to{transform:rotate(360deg)}}@keyframes breath{50%{transform:scale(1.045)}}@keyframes rise{50%{transform:translateY(-8px)}}@keyframes waveGlow{0%,100%{opacity:1;stroke:#119c8c}50%{opacity:.56;stroke:#36bba9}}
+@media(max-width:1220px){.app{grid-template-columns:210px minmax(0,1fr)}.sidebar{padding-inline:12px}.main{padding-inline:22px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-two{grid-template-columns:minmax(0,1.35fr) minmax(270px,.8fr)}.hero{grid-template-columns:1fr .76fr}.floating.f1{left:-5px}.floating.f2{right:-5px}}
+@media(max-width:870px){.app{display:block}.sidebar{display:none}.main{padding:20px 16px 100px}.hero{grid-template-columns:1fr .72fr;min-height:285px}.hero-copy{padding:26px}.hero h1{font-size:32px;letter-spacing:-1.5px}.monitor-orbit{height:190px;width:190px}.monitor-core{height:152px;width:152px}.floating{display:none}.grid-two,.lower{grid-template-columns:1fr}.mobile-nav{display:flex;position:fixed;z-index:10;bottom:0;left:0;right:0;justify-content:space-around;background:#fff;border-top:1px solid #e4edee;padding:9px 7px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -9px 27px #3e6a7710}.mobile-nav a{color:#91a5ac;font-weight:800;font-size:10px;display:grid;justify-items:center;gap:4px;min-width:62px}.mobile-nav a:first-child{color:#0b9b88}.mobile-nav svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2}}
+@media(max-width:570px){.top{margin-bottom:17px}.breadcrumb{font-size:10px}.clock{display:none}.hero{display:block;min-height:0}.hero-copy{padding:26px 22px 10px}.hero h1{font-size:32px}.hero p{font-size:12px}.hero-monitor{height:220px;padding:8px}.monitor-orbit{height:177px;width:177px}.monitor-core{height:145px;width:145px}.monitor-core svg{width:76px}.monitor-caption{font-size:9px}.section-head{align-items:start}.section-head h2{font-size:19px}.section-head .sub{max-width:130px;font-size:10px}.stats{gap:10px}.metric{padding:16px}.metric-icon{height:36px;width:36px}.metric-label{font-size:11px;margin-top:13px}.metric-val{font-size:29px}.metric-val small{font-size:12px}.metric-foot{font-size:9px}.spark{width:52px}.chart-card,.equipment,.connection,.events,.table-card{padding:19px}.panel-head{flex-wrap:wrap}.chart-area{height:185px}.chart-number strong{font-size:29px}.form-grid{grid-template-columns:1fr}.field.wide{grid-column:auto}.safety-banner{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+ <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.8a5 5 0 0 0-7.1 0L12 7.5l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-8.1a5 5 0 0 0 0-7.1Z"/><path d="M3.8 12h4l2-3 3.7 6 1.7-3h5"/></symbol>
+ <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></symbol>
+ <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 19h18M3 3v16M5 16l5-6 4 3 6-8"/></symbol>
+ <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 9a14 14 0 0 1 18 0M6 12a10 10 0 0 1 12 0M9 15a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1"/></symbol>
+ <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>
+ <symbol id="i-temp" viewBox="0 0 24 24"><path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0Z"/><path d="M12 10v7"/></symbol>
+ <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 2C8 8 5 11 5 15a7 7 0 0 0 14 0c0-4-3-7-7-13Z"/><path d="M9 17a4 4 0 0 0 4 2"/></symbol>
+ <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4.7 16a9 9 0 1 1 14.6 0M12 13l4-5M8 18h8"/></symbol>
+ <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/></symbol>
+</svg>
+<div class="app">
+<aside class="sidebar">
+ <a class="logo" href="#inicio"><span class="logo-icon"><svg><use href="#i-heart"/></svg></span><span><strong>Vita<span>Sense</span></strong><small>LAB MONITOR</small></span></a>
+ <div><p class="nav-caption">PAINEL DE MONITORAMENTO</p><nav class="navigation" aria-label="Navegação principal"><a href="#inicio" class="active"><svg><use href="#i-grid"/></svg> Visão geral</a><a href="#graficos"><svg><use href="#i-trend"/></svg> Histórico ambiental</a><a href="#leituras"><svg><use href="#i-list"/></svg> Últimas leituras</a><a href="#conexao"><svg><use href="#i-wifi"/></svg> Conexão HiveMQ</a></nav></div>
+ <div class="sidebar-note"><span class="note-mark"><svg width="19" height="19" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><use href="#i-info"/></svg></span><strong>Protótipo educacional</strong>Telemetria ambiental do ESP32. Não mede respiração, saturação de oxigênio ou condição de uma pessoa.</div>
+</aside>
+<main class="main" id="inicio">
+ <header class="top"><div class="breadcrumb">Pesquisa e desenvolvimento&nbsp; / &nbsp;<strong>Painel ambiental</strong></div><div class="top-right"><span class="clock" id="clock">--:--:--</span><span id="connectionPill" class="pill offline" role="status" aria-live="polite"><span class="dot"></span><span id="connectionLabel">DESCONECTADO</span></span></div></header>
+ <section class="hero" aria-labelledby="mainTitle"><div class="hero-copy"><div class="eyebrow">● MONITORAMENTO AMBIENTAL EXPERIMENTAL</div><h1 id="mainTitle">Informações do ambiente.<br><span>Em tempo real.</span></h1><p>Acompanhe as leituras do DHT11, o movimento do servo e a conexão do ESP32 em uma interface de pesquisa inspirada em painéis de saúde.</p><div class="hero-actions"><a class="btn primary" href="#conexao" id="heroConnect"><svg><use href="#i-wifi"/></svg> Conectar ao HiveMQ</a><button type="button" class="btn" id="demoHero">▶ Testar demonstração</button></div></div><div class="hero-monitor" aria-label="Ilustração decorativa, não representa batimentos ou sinais vitais"><div class="monitor-orbit"></div><div class="monitor-core"><svg viewBox="0 0 100 70" aria-hidden="true"><path class="heart-line" d="M5 37h21l10-17 16 33 12-23 8 7h23"/></svg></div><div class="floating f1">TEMPERATURA <strong id="heroTemperature">-- °C</strong></div><div class="floating f2">UMIDADE RELATIVA <strong id="heroHumidity">-- %</strong></div><div class="monitor-caption">ILUSTRAÇÃO · NÃO É SINAL FISIOLÓGICO</div></div></section>
+ <div class="safety-banner" role="note"><svg><use href="#i-info"/></svg><span><b>Dados de laboratório, não sinais vitais.</b> O DHT11 não mede fluxo respiratório, oxigenação ou abertura segura de cânulas. Esta interface não fornece alertas clínicos nem deve ser utilizada em pessoas.</span></div>
+ <div class="section-head"><div><div class="eyebrow">01 / VISÃO GERAL</div><h2>Leituras do protótipo</h2></div><span class="sub" id="lastSeen">Aguardando conexão</span></div>
+ <section class="stats" aria-label="Indicadores experimentais">
+  <article class="metric card"><div class="metric-header"><span class="metric-icon"><svg><use href="#i-temp"/></svg></span><span class="tag">DHT11</span></div><p class="metric-label">Temperatura ambiente</p><div class="metric-val"><span id="temperature">--</span><small>°C</small></div><div class="metric-foot"><span id="tempFoot">Sem leituras</span><svg class="spark" viewBox="0 0 75 24" aria-hidden="true"><path id="tempSpark" d="M0 12H75"/></svg></div></article>
+  <article class="metric card"><div class="metric-header"><span class="metric-icon blue"><svg><use href="#i-drop"/></svg></span><span class="tag">DHT11</span></div><p class="metric-label">Umidade relativa</p><div class="metric-val"><span id="humidity">--</span><small>%</small></div><div class="metric-foot"><span id="humidityFoot">Sem leituras</span><svg class="spark" viewBox="0 0 75 24" aria-hidden="true"><path id="humiditySpark" d="M0 12H75"/></svg></div></article>
+  <article class="metric card"><div class="metric-header"><span class="metric-icon violet"><svg><use href="#i-gauge"/></svg></span><span class="tag">GPIO 5</span></div><p class="metric-label">Ângulo do servo</p><div class="metric-val"><span id="servo">--</span><small>°</small></div><div class="metric-foot"><span id="servoFoot">Sem leituras</span><span>0°–180°</span></div></article>
+  <article class="metric card"><div class="metric-header"><span class="metric-icon gold"><svg><use href="#i-wifi"/></svg></span><span class="tag">ESP32</span></div><p class="metric-label">Sinal Wi-Fi</p><div class="metric-val"><span id="wifi">--</span><small>dBm</small></div><div class="metric-foot"><span id="wifiFoot">Sem leituras</span><span>RSSI</span></div></article>
+ </section>
+ <div class="section-head" id="graficos"><div><div class="eyebrow">02 / EVOLUÇÃO DOS DADOS</div><h2>Histórico ambiental</h2></div><span class="sub">Até 90 amostras desta sessão</span></div>
+ <section class="grid-two"><article class="chart-card card"><div class="panel-head"><div><h3>Variação das leituras</h3><p>Atualizado quando o broker entrega novas mensagens.</p></div><div class="segmented" role="group" aria-label="Métrica do gráfico"><button type="button" id="chartTemp" class="selected" aria-pressed="true">Temperatura</button><button type="button" id="chartHumidity" aria-pressed="false">Umidade</button></div></div><div class="chart-number"><strong id="chartCurrent">--</strong><span id="chartUnit">°C · temperatura</span></div><div class="chart-area"><svg class="chart-svg" id="historyChart" viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Gráfico de histórico de temperatura"><defs><linearGradient id="historyGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0fae9b" stop-opacity=".19"/><stop offset="100%" stop-color="#0fae9b" stop-opacity="0"/></linearGradient></defs><path class="grid-line" d="M 10 28 H 625 M 10 81 H 625 M 10 134 H 625 M 10 187 H 625"/><path id="historyFill" d="" fill="url(#historyGradient)"/><path id="historyLine" class="chart-line" d=""/><circle id="historyDot" class="chart-point" r="5" cx="-20" cy="-20"/></svg></div><div class="chart-legend"><span id="chartStart">Sem dados</span><span id="chartRange">Aguardando sensor</span><span id="chartEnd">--:--:--</span></div><div class="chart-hint">O histórico fica apenas nesta aba. Não é prontuário nem registro de sinais vitais.</div></article>
+ <article class="equipment card"><div class="panel-head"><div><h3>Visualização do servo</h3><p>Posição informada pelo ESP32.</p></div><span class="tag">0° — 180°</span></div><div class="device-visual"><svg viewBox="0 0 260 207" role="img" aria-label="Medidor ilustrativo da posição do servo"><path class="servo-track" d="M 35 171 A 109 109 0 0 1 225 171"/><path id="servoArc" class="servo-arc" d="M 35 171 A 109 109 0 0 1 225 171" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/><text id="servoGaugeNumber" x="130" y="135" class="servo-degree">--°</text><text x="130" y="157" class="servo-degree-sub">ÂNGULO</text><text x="27" y="192" class="servo-mark">0°</text><text x="212" y="192" class="servo-mark">180°</text></svg></div><div class="leds" aria-label="Indicadores de posição"><div class="led green" id="ledGreen"><i></i>VERDE</div><div class="led yellow" id="ledYellow"><i></i>AMARELO</div><div class="led red" id="ledRed"><i></i>VERMELHO</div></div><p class="micro-note">LEDs = faixas de posição do servo. Nenhuma cor indica qualidade do ar, estado de saúde ou segurança respiratória.</p></article></section>
+ <div class="section-head" id="leituras"><div><div class="eyebrow">03 / REGISTROS</div><h2>Últimas medições</h2></div><span class="sub" id="rxCounter">0 mensagens nesta sessão</span></div>
+ <section class="table-card card"><div class="panel-head"><div><h3>Dados recebidos pelo MQTT</h3><p>Horários registrados pelo navegador; sem identificação de pacientes.</p></div><span class="tag">SOMENTE LEITURA</span></div><div class="table-scroller"><table class="reading-table"><thead><tr><th>HORÁRIO</th><th>TEMPERATURA</th><th>UMIDADE</th><th>SERVO</th><th>ORIGEM</th></tr></thead><tbody id="readingRows"><tr class="empty-row"><td colspan="5">Aguardando a primeira mensagem do ESP32.</td></tr></tbody></table></div></section>
+ <div class="section-head"><div><div class="eyebrow">04 / CONECTIVIDADE</div><h2>Central de conexão</h2></div><span class="sub">WebSocket seguro · WSS 8884</span></div>
+ <section class="lower"><article class="connection card" id="conexao"><div class="connection-head"><div class="panel-head"><div><h3>Conectar ao HiveMQ Cloud</h3><p>Conexão ao vivo, sem enviar comandos ao ESP32.</p></div></div><span class="tag">MQTT 3.1.1</span></div><form id="mqttForm" autocomplete="off"><div class="form-grid"><div class="field wide"><label for="host">ENDEREÇO DO BROKER</label><input id="host" type="text" value="125e4c5cf1a84e15a472be4cda4c9761.s1.eu.hivemq.cloud" spellcheck="false" required></div><div class="field"><label for="username">USUÁRIO MQTT</label><input id="username" type="text" value="perabru2" required spellcheck="false" autocomplete="username"></div><div class="field"><label for="password">SENHA MQTT</label><div class="password-wrap"><input id="password" type="password" placeholder="Digite a senha do broker" required autocomplete="off"><button type="button" class="eye" id="showPassword" aria-label="Mostrar ou ocultar senha">◉</button></div></div><div class="field wide"><label for="topic">TÓPICO DE TELEMETRIA</label><input id="topic" value="projeto/controle_ar/telemetria" required spellcheck="false"></div></div><div class="form-actions"><button class="btn primary" type="submit" id="connectBtn">↗ Conectar agora</button><button class="btn danger" id="disconnectBtn" type="button" disabled>Desconectar</button><button class="btn" id="demoBtn" type="button">▶ Modo demonstração</button></div><div class="error" id="formError" role="alert"></div><p class="hint">A senha é usada apenas na memória desta aba, inclusive durante a reconexão, e não é salva nem embutida no HTML. Para publicar o site, use uma conta MQTT separada com permissão de <strong>leitura apenas</strong> nos tópicos necessários.</p></form></article>
+ <article class="events card" id="eventos"><div class="panel-head"><div><h3>Atividade e conexão</h3><p>Eventos técnicos do sistema de pesquisa.</p></div><button id="csvBtn" type="button" class="btn" disabled>↓ CSV</button></div><ul id="eventList" class="event-list" aria-label="Histórico de eventos"><li><span class="event-mark neutral"></span><span class="event-copy">Painel pronto. Conecte ao HiveMQ ou inicie uma demonstração.</span><time class="event-time">--:--</time></li></ul></article></section>
+ <footer class="footer"><span><strong>VitaSense Lab</strong> · ESP32 + DHT11 + HiveMQ Cloud</span><span>Protótipo educacional. Não destinado à avaliação ou ao controle de vias aéreas humanas.</span></footer>
+</main></div>
+<nav class="mobile-nav" aria-label="Navegação rápida"><a href="#inicio"><svg><use href="#i-grid"/></svg> Início</a><a href="#graficos"><svg><use href="#i-trend"/></svg> Gráficos</a><a href="#leituras"><svg><use href="#i-list"/></svg> Leituras</a><a href="#conexao"><svg><use href="#i-wifi"/></svg> Conexão</a></nav>
+<script>
+
+'use strict';
+/* Cliente MQTT 3.1.1 mínimo implementado em JavaScript puro.
+   WebSocket binário TLS (WSS); subscribe/telemetria apenas; não publica comandos. */
+(() => {
+ const $ = id => document.getElementById(id);
+ const enc = new TextEncoder();
+ const fmtTime = d => d.toLocaleTimeString('pt-BR', {hour12:false});
+ const state = {mode:'offline', ws:null, seq:0, reconnects:0, reconnectTimer:null, connectTimer:null, keepAlive:null, demoTimer:null, lastRx:0, lastPing:0, pingMs:null, data:null, history:[], messages:0, chart:'temperatura', creds:null, buffer:new Uint8Array(0), packetId:1, connecting:false, onlineStatus:null};
+ const $status = $('connectionPill');
+ const constraints = {temperatura:[-40,80],umidade:[0,100],servo:[0,180],wifi_rssi:[-125,0]};
+ let rafValues = new Map();
+ function log(text, tone='neutral') {
+  const li=document.createElement('li'),mark=document.createElement('span'),copy=document.createElement('span'),time=document.createElement('time');
+  mark.className='event-mark '+tone;copy.className='event-copy';copy.textContent=text;time.className='event-time';time.textContent=fmtTime(new Date());li.append(mark,copy,time);
+  $('eventList').prepend(li);while($('eventList').children.length>26)$('eventList').lastElementChild.remove();
+ }
+ function status(mode, detail='') {
+  state.mode=mode;
+  const texts={offline:'DESCONECTADO',connecting:'CONECTANDO',live:'AO VIVO',demo:'DEMONSTRAÇÃO',stale:'SEM LEITURAS',retry:'RECONECTANDO'};
+  $status.className='pill '+({live:'live',demo:'demo',connecting:'warn',retry:'warn',stale:'warn',offline:'offline'}[mode]||'offline');
+  $('connectionLabel').textContent=texts[mode]||'DESCONECTADO';
+  $('lastSeen').textContent=detail||({offline:'Aguardando conexão',connecting:'Conectando ao broker…',live:'Recebendo telemetria',demo:'Dados fictícios · demonstração',stale:'Sem telemetria recente',retry:'Tentando restabelecer a conexão'}[mode]);
+  $('connectBtn').disabled=['connecting','live','stale','retry'].includes(mode);
+  $('disconnectBtn').disabled=mode==='offline';
+  $('demoBtn').textContent=mode==='demo'?'■  Parar demonstração':'▶  Modo demonstração';
+  $('demoHero').textContent=mode==='demo'?'■  Parar demonstração':'▶  Testar demonstração';
+  $('heroConnect').textContent=mode==='live'?'✓  MQTT conectado':'↗  Conectar ao HiveMQ';
+ }
+ function setError(msg=''){$('formError').textContent=msg;}
+ function u16(n){return [(n>>8)&255,n&255];}
+ function utf8(s){const bytes=enc.encode(s);if(bytes.length>65535)throw Error('Texto muito longo no protocolo MQTT.');return [...u16(bytes.length),...bytes];}
+ function mqttPacket(type,body){let n=body.length, remaining=[];do{let digit=n%128;n=Math.floor(n/128);if(n>0)digit|=128;remaining.push(digit);}while(n>0);return Uint8Array.from([type,...remaining,...body]);}
+ function send(packet){if(state.ws?.readyState===WebSocket.OPEN)state.ws.send(packet);}
+ function connectFrame(username,password,clientId){
+  const vh=[...utf8('MQTT'),4,0xC2,...u16(30)];
+  const payload=[...utf8(clientId),...utf8(username),...utf8(password)];
+  return mqttPacket(0x10,[...vh,...payload]);
+ }
+ function subscribeFrame(topics){const id=state.packetId++%65535||1;const body=[...u16(id)];for(const topic of topics)body.push(...utf8(topic),0);return mqttPacket(0x82,body);}
+ function ackFrame(id){return mqttPacket(0x40,u16(id));}
+ function clearTimers(){clearTimeout(state.reconnectTimer);clearTimeout(state.connectTimer);clearInterval(state.keepAlive);clearInterval(state.demoTimer);state.reconnectTimer=state.connectTimer=state.keepAlive=state.demoTimer=null;}
+ function closeCurrent(){const ws=state.ws;state.ws=null;if(ws){ws.onclose=ws.onerror=ws.onmessage=ws.onopen=null;try{ws.close(1000,'Interface encerrada');}catch{}}}
+ function stop(){state.seq++;clearTimers();closeCurrent();state.creds=null;state.connecting=false;state.onlineStatus=null;state.lastRx=0;status('offline');}
+ function resetSession(){state.history=[];state.messages=0;state.lastRx=0;state.pingMs=null;state.data=null;state.onlineStatus=null;state.buffer=new Uint8Array(0);$('rxCounter').textContent='0 mensagens nesta sessão';paintEmpty();}
+ function paintEmpty(){for(const id of ['temperature','humidity','wifi','servo'])$(id).textContent='--';$('heroTemperature').textContent='-- °C';$('heroHumidity').textContent='-- %';$('servoGaugeNumber').textContent='--°';$('servoArc').setAttribute('stroke-dashoffset',100);$('chartCurrent').textContent='--';$('chartStart').textContent='Sem dados';$('chartEnd').textContent='--:--:--';$('chartRange').textContent='Aguardando sensor';$('historyLine').setAttribute('d','');$('historyFill').setAttribute('d','');$('historyDot').setAttribute('cx',-20);$('historyDot').setAttribute('cy',-20);$('readingRows').innerHTML='<tr class="empty-row"><td colspan="5">Aguardando a primeira mensagem do ESP32.</td></tr>';$('ledGreen').classList.remove('active');$('ledYellow').classList.remove('active');$('ledRed').classList.remove('active');$('tempSpark').setAttribute('d','M0 12H75');$('humiditySpark').setAttribute('d','M0 12H75');for(const id of ['tempFoot','humidityFoot','wifiFoot','servoFoot'])$(id).textContent='Sem leituras';}
+ function cleanHostname(host){
+  const h=host.trim().replace(/^wss:\/\//i,'').replace(/\/$/,'');
+  if(!/^[a-zA-Z0-9.-]+$/.test(h)||h.includes('..')||h.length>253||!h.includes('.'))throw Error('Informe somente o hostname válido do HiveMQ, sem protocolo nem porta.');
+  return h;
+ }
+ function connect(){
+  let host,username,password,topic;
+  try{host=cleanHostname($('host').value);username=$('username').value.trim();password=$('password').value;topic=$('topic').value.trim();if(!username||!password||!topic||topic.includes('#')||topic.includes('+'))throw Error('Informe usuário, senha e um tópico sem curingas.');if(enc.encode(password).length>65535)throw Error('Senha demasiado longa.');}
+  catch(err){setError(err.message);return;}
+  stop();resetSession();setError('');state.creds={host,username,password,topic};state.reconnects=0;const seq=state.seq;status('connecting');log('Conectando ao HiveMQ por WebSocket seguro…');openSocket(seq);
+ }
+ function openSocket(seq){
+  if(seq!==state.seq||!state.creds)return;
+  closeCurrent();state.buffer=new Uint8Array(0);state.connecting=true;
+  let socket;
+  try{socket=new WebSocket('wss://'+state.creds.host+':8884/mqtt','mqtt');socket.binaryType='arraybuffer';state.ws=socket;}
+  catch(err){setError('Não foi possível iniciar o WebSocket: '+err.message);scheduleReconnect(seq);return;}
+  state.connectTimer=setTimeout(()=>{if(seq===state.seq&&state.ws===socket&&state.connecting){setError('Tempo limite: verifique broker, rede e porta WSS 8884.');socket.close();}},15000);
+  socket.onopen=()=>{if(seq!==state.seq||state.ws!==socket)return;send(connectFrame(state.creds.username,state.creds.password,'vitasense-web-'+Math.random().toString(16).slice(2,10)));};
+  socket.onmessage=ev=>{
+   if(seq!==state.seq||state.ws!==socket)return;
+   if(ev.data instanceof ArrayBuffer)receiveBytes(new Uint8Array(ev.data),seq);
+   else if(ev.data instanceof Blob)ev.data.arrayBuffer().then(buf=>{if(seq===state.seq&&state.ws===socket)receiveBytes(new Uint8Array(buf),seq);});
+  };
+  socket.onerror=()=>{if(seq!==state.seq||state.ws!==socket)return;setError('Falha de WebSocket/TLS. Confirme hostname, rede e liberação da porta 8884.');};
+  socket.onclose=()=>{if(seq!==state.seq||state.ws!==socket)return;clearTimeout(state.connectTimer);clearInterval(state.keepAlive);state.ws=null;state.connecting=false;log('Conexão interrompida. Verificando reconexão…','bad');scheduleReconnect(seq);};
+ }
+ function scheduleReconnect(seq){
+  if(seq!==state.seq||!state.creds)return;
+  clearTimeout(state.reconnectTimer);
+  state.reconnects++;
+  const delay=Math.min(30000,Math.round(1200*Math.pow(1.7,Math.min(7,state.reconnects-1))));
+  status('retry','Reconexão em '+(delay/1000).toFixed(1)+' s · tentativa '+state.reconnects);
+  state.reconnectTimer=setTimeout(()=>openSocket(seq),delay);
+ }
+ function receiveBytes(bytes,seq){
+  const accumulated=new Uint8Array(state.buffer.length+bytes.length);accumulated.set(state.buffer);accumulated.set(bytes,state.buffer.length);state.buffer=accumulated;
+  let offset=0;
+  while(offset<state.buffer.length){
+   if(offset+2>state.buffer.length)break;
+   let mult=1,remaining=0,pos=offset+1,count=0,digit;
+   do{if(pos>=state.buffer.length)return (state.buffer=state.buffer.slice(offset));digit=state.buffer[pos++];remaining+=(digit&127)*mult;mult*=128;if(++count>4||remaining>1048576){setError('Pacote MQTT inválido ou muito grande.');state.ws?.close();return;}}while(digit&128);
+   if(pos+remaining>state.buffer.length)break;
+   try{handlePacket(state.buffer[offset],state.buffer.slice(pos,pos+remaining),seq);}catch(err){log('Pacote MQTT ignorado: '+err.message,'bad');}
+   offset=pos+remaining;
+  }
+  state.buffer=state.buffer.slice(offset);
+ }
+ function handlePacket(header,body,seq){
+  const type=header>>4;
+  if(type===2){
+   if(body.length<2||body[1]!==0){const reason=['aceito','protocolo incompatível','identificador rejeitado','broker indisponível','usuário ou senha inválidos','sem autorização'][body[1]]||'resposta inesperada';setError('Conexão MQTT recusada: '+reason+'.');log('Broker recusou conexão: '+reason,'bad');stop();return;}
+   clearTimeout(state.connectTimer);state.connecting=false;state.reconnects=0;state.lastPing=0;
+   const topics=[state.creds.topic,'projeto/controle_ar/status'].filter((x,i,a)=>a.indexOf(x)===i);
+   send(subscribeFrame(topics));status('stale','Conectado ao broker · aguardando leitura do ESP32');setError('');log('Autenticação aceita. Inscrevendo-se nos tópicos…','good');
+   state.keepAlive=setInterval(()=>{
+    if(seq!==state.seq||state.ws?.readyState!==WebSocket.OPEN)return;
+    if(state.lastPing&&Date.now()-state.lastPing>55000){log('Sem resposta ao PING MQTT; reconectando.','bad');state.ws.close();return;}
+    if(!state.lastPing){state.lastPing=Date.now();send(Uint8Array.from([0xC0,0x00]));}
+   },12000);
+  }else if(type===9){if(body.length>2&&[...body.slice(2)].some(x=>x===128)){setError('Sem permissão MQTT para assinar os tópicos.');log('Broker negou inscrição no tópico.','bad');}else log('Inscrição MQTT confirmada. Aguardando dados do sensor.','good');}
+  else if(type===13){if(state.lastPing){state.pingMs=Date.now()-state.lastPing;state.lastPing=0;}}
+  else if(type===3){
+   if(body.length<2)return;const topicLen=(body[0]<<8)|body[1];if(topicLen+2>body.length)return;
+   const topic=new TextDecoder().decode(body.slice(2,2+topicLen));const qos=(header>>1)&3;let cursor=topicLen+2,packetID=0;
+   if(qos>0){if(cursor+2>body.length)return;packetID=(body[cursor]<<8)|body[cursor+1];cursor+=2;}
+   const payload=new TextDecoder().decode(body.slice(cursor));
+   if(qos===1)send(ackFrame(packetID));
+   if(topic==='projeto/controle_ar/status'){
+    state.onlineStatus=payload==='online';log('Status do ESP32: '+(state.onlineStatus?'online':'offline'),state.onlineStatus?'good':'bad');return;
+   }
+   if(topic!==state.creds?.topic)return;
+   let obj;try{obj=JSON.parse(payload);}catch{log('Mensagem ignorada: JSON inválido.','bad');return;}
+   const data=validate(obj);if(!data){log('Mensagem ignorada: campos numéricos ausentes ou inválidos.','bad');return;}
+   state.lastRx=Date.now();state.messages++;ingest(data,false);status('live','Última leitura recebida às '+fmtTime(new Date(state.lastRx)));
+  }
+ }
+ function validate(raw){
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+  const result={};for(const key of Object.keys(constraints)){
+   const value=raw[key];if(typeof value!=='number'||!Number.isFinite(value))return null;
+   const [min,max]=constraints[key];if(value<min||value>max)return null;result[key]=value;
+  }
+  if(raw.led!==undefined&&typeof raw.led!=='string')return null;
+  result.led=raw.led|| (result.servo<=60?'VERDE':result.servo<=120?'AMARELO':'VERMELHO');
+  result.uptime_ms=typeof raw.uptime_ms==='number'&&Number.isFinite(raw.uptime_ms)?raw.uptime_ms:null;
+  return result;
+ }
+ function animateNumber(id,to,digits=1){const el=$(id);if(!el)return;const start=rafValues.get(id)?.value??to;const previous=rafValues.get(id);if(previous)cancelAnimationFrame(previous.raf);if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=to.toFixed(digits).replace('.',',');rafValues.set(id,{value:to});return;}
+  const begin=performance.now(),duration=520;
+  function frame(now){const t=Math.min(1,(now-begin)/duration),ease=1-Math.pow(1-t,3);el.textContent=(start+(to-start)*ease).toFixed(digits).replace('.',',');if(t<1){const raf=requestAnimationFrame(frame);rafValues.set(id,{value:start+(to-start)*ease,raf});}else rafValues.set(id,{value:to});}
+  frame(begin);
+ }
+ function ingest(data,simulated){
+  state.data=data;state.history.push({...data,at:Date.now(),simulated});if(state.history.length>90)state.history.shift();
+  animateNumber('temperature',data.temperatura,1);animateNumber('humidity',data.umidade,1);animateNumber('servo',data.servo,0);animateNumber('wifi',data.wifi_rssi,0);
+  $('heroTemperature').textContent=data.temperatura.toFixed(1).replace('.',',')+' °C';$('heroHumidity').textContent=data.umidade.toFixed(1).replace('.',',')+' %';
+  $('servoGaugeNumber').textContent=Math.round(data.servo)+'°';$('servoArc').setAttribute('stroke-dashoffset',(100*(1-data.servo/180)).toFixed(2));
+  for(const [color,key] of [['VERDE','ledGreen'],['AMARELO','ledYellow'],['VERMELHO','ledRed']])$(key).classList.toggle('active',data.led.toUpperCase()===color);
+  $('tempFoot').textContent=simulated?'Leitura simulada':'Última leitura válida';$('humidityFoot').textContent=simulated?'Leitura simulada':'Última leitura válida';$('wifiFoot').textContent=data.wifi_rssi>=-65?'Sinal Wi-Fi forte':data.wifi_rssi>=-80?'Sinal Wi-Fi médio':'Sinal Wi-Fi fraco';$('servoFoot').textContent='LED '+data.led.toUpperCase();
+  $('rxCounter').textContent=state.messages+' '+(state.messages===1?'mensagem':'mensagens')+' nesta sessão';
+  updateChart();updateSpark('temperatura','tempSpark');updateSpark('umidade','humiditySpark');updateRows();
+ }
+ function updateRows(){
+  const tbody=$('readingRows');tbody.replaceChildren();
+  for(const d of state.history.slice(-6).reverse()){
+   const row=document.createElement('tr');if(d.simulated)row.className='demo-row';
+   const vals=[fmtTime(new Date(d.at)),d.temperatura.toFixed(1).replace('.',',')+' °C',d.umidade.toFixed(1).replace('.',',')+' %',Math.round(d.servo)+'°'];
+   for(const value of vals){const cell=document.createElement('td');cell.textContent=value;row.append(cell);}
+   const source=document.createElement('td'),badge=document.createElement('span');badge.className='small-badge'+(d.simulated?' sim':'');badge.textContent=d.simulated?'SIMULAÇÃO':'ESP32 / MQTT';source.append(badge);row.append(source);tbody.append(row);
+  }
+ }
+ function pointsFor(key,width,height,pad=7){const a=state.history;if(!a.length)return[];const vals=a.map(x=>x[key]),low=Math.min(...vals),high=Math.max(...vals),spread=Math.max(1,high-low),minimum=low-spread*.33,maximum=high+spread*.33;
+  return vals.map((v,i)=>[pad+(i/Math.max(1,vals.length-1))*(width-2*pad),pad+(1-(v-minimum)/(maximum-minimum))*(height-2*pad)]);
+ }
+ function linePath(pts){return pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' ');}
+ function updateSpark(key,id){const pts=pointsFor(key,75,24,2);$(id).setAttribute('d',pts.length>1?linePath(pts):'M0 12H75');}
+ function updateChart(){const key=state.chart,vals=state.history.map(x=>x[key]),color=key==='temperatura'?'#0fae9b':'#4e84df';
+  $('chartTemp').classList.toggle('selected',key==='temperatura');$('chartHumidity').classList.toggle('selected',key==='umidade');$('chartTemp').setAttribute('aria-pressed',String(key==='temperatura'));$('chartHumidity').setAttribute('aria-pressed',String(key==='umidade'));
+  $('historyLine').setAttribute('stroke',color);$('historyDot').setAttribute('stroke',color);document.querySelector('#historyGradient stop').setAttribute('stop-color',color);
+  $('historyChart').setAttribute('aria-label','Gráfico de histórico de '+(key==='temperatura'?'temperatura':'umidade'));
+  $('chartCurrent').textContent=vals.length?vals[vals.length-1].toFixed(1).replace('.',','):'--';$('chartUnit').textContent=key==='temperatura'?'°C · temperatura':'% · umidade';
+  if(!vals.length)return;
+  const pts=pointsFor(key,640,220,15),path=linePath(pts),last=pts[pts.length-1];
+  $('historyLine').setAttribute('d',path);$('historyFill').setAttribute('d',pts.length>1?path+' L '+last[0].toFixed(2)+' 207 L 15 207 Z':'');$('historyDot').setAttribute('cx',last[0]);$('historyDot').setAttribute('cy',last[1]);
+  $('chartStart').textContent=fmtTime(new Date(state.history[0].at));$('chartEnd').textContent=fmtTime(new Date(state.history[state.history.length-1].at));$('chartRange').textContent='Mín '+Math.min(...vals).toFixed(1).replace('.',',')+' · Máx '+Math.max(...vals).toFixed(1).replace('.',',');
+ }
+ function demo(){if(state.mode==='demo'){stop();log('Demonstração encerrada.');return;}stop();resetSession();setError('');status('demo');log('Modo demonstração iniciado: dados fictícios.');let i=0;
+  function tick(){const v={temperatura:+(25+Math.sin(i/5)*2.1+Math.sin(i/13)*.4).toFixed(1),umidade:+(57+Math.sin(i/7+1)*8).toFixed(1),servo:Math.round(90+Math.sin(i/8)*75),wifi_rssi:-50-Math.round(8*Math.abs(Math.sin(i/9)))};v.led=v.servo<=60?'VERDE':v.servo<=120?'AMARELO':'VERMELHO';state.messages++;ingest(v,true);status('demo','Dados fictícios · última atualização às '+fmtTime(new Date()));i++;}
+  tick();state.demoTimer=setInterval(tick,2000);
+ }
+ $('mqttForm').addEventListener('submit',e=>{e.preventDefault();connect();});
+ $('disconnectBtn').addEventListener('click',()=>{stop();setError('');log('Desconectado manualmente.');});
+ $('demoBtn').addEventListener('click',demo);$('demoHero').addEventListener('click',demo);
+ $('showPassword').addEventListener('click',()=>{$('password').type=$('password').type==='password'?'text':'password';});
+ $('chartTemp').addEventListener('click',()=>{state.chart='temperatura';updateChart();});
+ $('chartHumidity').addEventListener('click',()=>{state.chart='umidade';updateChart();});
+ $('csvBtn').addEventListener('click',()=>{
+  if(!state.history.length)return;const rows=['horario,temperatura_c,umidade_pct,servo_graus,led,wifi_dbm,simulado'];for(const d of state.history)rows.push([new Date(d.at).toISOString(),d.temperatura,d.umidade,d.servo,d.led,d.wifi_rssi,d.simulated].join(','));
+  const blob=new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='vitasense-dados-ambientais-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);log('Histórico exportado como CSV.','good');
+ });
+ setInterval(()=>{
+  $('clock').textContent=fmtTime(new Date());$('csvBtn').disabled=!state.history.length;
+  if(state.mode==='live'||state.mode==='stale'){
+   const age=state.lastRx?Date.now()-state.lastRx:Infinity;
+   if(age>8000&&state.mode==='live'){status('stale','Sem telemetria há '+Math.floor(age/1000)+' s · última leitura mantida');log('Telemetria desatualizada. Leituras anteriores permanecem visíveis e não são atuais.','bad');}
+   else if(state.mode==='stale'&&state.lastRx) $('lastSeen').textContent='Sem telemetria há '+Math.floor(age/1000)+' s · última leitura mantida';
+  }
+ },1000);
+ $('clock').textContent=fmtTime(new Date());
+})();
+
+</script>
+</body></html>
