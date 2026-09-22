@@ -1,4 +1,5 @@
-
+// PROTOTIPO DE BANCADA: nao conectar a nenhuma via aerea.
+// Angulo publicado e o COMANDADO, nao uma medicao da posicao mecanica.
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
@@ -32,6 +33,10 @@ const char* TOPICO_DADOS =
 
 const char* TOPICO_STATUS =
   "projeto/controle_ar/status";
+
+// Publicacao imediata do angulo para o site (payload: numero em graus)
+const char* TOPICO_ANGULO =
+  "projeto/controle_ar/servo/angulo";
 
 // ==========================================
 // CERTIFICADO RAIZ ISRG ROOT X1
@@ -78,8 +83,8 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 // ==========================================
 
 #define PINO_SERVO       5
-#define PINO_POTEN       12
-#define PINO_DHT         15
+#define PINO_POTEN       34 // ADC1: mover o fio central do potenciometro para GPIO34
+#define PINO_DHT         2
 
 #define PINO_VERDE       25
 #define PINO_AMARELO     26
@@ -114,6 +119,15 @@ unsigned long ultimaLeituraDHT = 0;
 unsigned long ultimaLeituraPot = 0;
 unsigned long ultimaTentativaMQTT = 0;
 unsigned long ultimaTentativaWiFi = 0;
+unsigned long ultimaPublicacaoAngulo = 0;
+int ultimoAnguloPublicado = -1;
+
+// Evita saturar MQTT quando o potenciometro oscila.
+const unsigned long INTERVALO_ANGULO_MS = 150;
+const unsigned long HEARTBEAT_ANGULO_MS = 1000;
+
+void publicarDados();
+void publicarAngulo(bool forcar);
 
 bool horarioSincronizado = false;
 
@@ -258,6 +272,12 @@ void conectarMQTT() {
       true
     );
 
+    // Ao reconectar, publica a posicao atual, mesmo sem girar o potenciometro.
+    ultimoAnguloPublicado = -1;
+    ultimaPublicacaoAngulo = 0;
+    publicarAngulo(true);
+    publicarDados();
+
   } else {
 
     Serial.print("Falha MQTT. Estado: ");
@@ -316,6 +336,41 @@ void controlarServo() {
 }
 
 // ==========================================
+// ANGULO EM TEMPO REAL: TOPICO EXCLUSIVO
+// ==========================================
+
+void publicarAngulo(bool forcar) {
+  if (!mqtt.connected()) return;
+
+  unsigned long agora = millis();
+  bool mudou = anguloServo != ultimoAnguloPublicado;
+  bool horaHeartbeat = agora - ultimaPublicacaoAngulo >= HEARTBEAT_ANGULO_MS;
+
+  if (!forcar && !mudou && !horaHeartbeat) return;
+  if (!forcar && ultimaPublicacaoAngulo != 0 &&
+      agora - ultimaPublicacaoAngulo < INTERVALO_ANGULO_MS) return;
+
+  char graus[8];
+  snprintf(graus, sizeof(graus), "%d", anguloServo);
+
+  // Retained: o site que abrir depois recebe imediatamente o ultimo valor.
+  if (mqtt.publish(TOPICO_ANGULO, graus, true)) {
+    ultimoAnguloPublicado = anguloServo;
+    ultimaPublicacaoAngulo = agora;
+    Serial.print("MQTT ANGULO: ");
+    Serial.print(graus);
+    Serial.println(" graus");
+
+    // Atualiza tambem a telemetria do site antigo, sem esperar pelo DHT.
+    if (!isnan(temperatura) && !isnan(umidade)) {
+      publicarDados();
+    }
+  } else {
+    Serial.println("Falha no envio MQTT do angulo; tentara novamente.");
+  }
+}
+
+// ==========================================
 // ENVIO DE DADOS MQTT
 // ==========================================
 
@@ -346,6 +401,8 @@ void publicarDados() {
       "\"temperatura\":%.1f,"
       "\"umidade\":%.1f,"
       "\"servo\":%d,"
+      "\"angulo_comandado\":%d,"
+      "\"posicao_confirmada\":false,"
       "\"led\":\"%s\","
       "\"wifi_rssi\":%ld,"
       "\"uptime_ms\":%lu"
@@ -353,6 +410,7 @@ void publicarDados() {
 
     temperatura,
     umidade,
+    anguloServo,
     anguloServo,
     estadoLED,
     (long)WiFi.RSSI(),
@@ -482,6 +540,7 @@ void setup() {
   mqtt.setBufferSize(512);
 
   mqtt.setKeepAlive(30);
+  mqtt.setSocketTimeout(2); // reduz esperas de leitura em falhas MQTT
 
   // ID unico baseado no MAC do ESP32
   uint64_t mac = ESP.getEfuseMac();
@@ -530,6 +589,7 @@ void loop() {
   // Processamento MQTT
   if (mqtt.connected()) {
     mqtt.loop();
+    publicarAngulo(false); // independe do intervalo de leitura do DHT11
   }
 
   // Leitura e publicacao do DHT11
