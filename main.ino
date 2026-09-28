@@ -83,12 +83,12 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 // ==========================================
 
 #define PINO_SERVO       5
-#define PINO_POTEN       34 // ADC1: mover o fio central do potenciometro para GPIO34
-#define PINO_DHT         2
+#define PINO_POTEN       34 // ADC1 - entrada analogica para o potenciometro
+#define PINO_DHT         26
 
 #define PINO_VERDE       25
-#define PINO_AMARELO     26
-#define PINO_VERMELHO    27
+#define PINO_AMARELO     33
+#define PINO_VERMELHO    32
 
 #define TIPO_DHT DHT11
 
