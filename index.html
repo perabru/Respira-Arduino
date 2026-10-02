@@ -56,7 +56,7 @@
  <div class="section-head" id="leituras"><div><div class="eyebrow">03 / REGISTROS</div><h2>Últimas medições</h2></div><span class="sub" id="rxCounter">0 mensagens nesta sessão</span></div>
  <section class="table-card card"><div class="panel-head"><div><h3>Dados recebidos pelo MQTT</h3><p>Horários registrados pelo navegador; sem identificação de pacientes.</p></div><span class="tag">SOMENTE LEITURA</span></div><div class="table-scroller"><table class="reading-table"><thead><tr><th>HORÁRIO</th><th>TEMPERATURA</th><th>UMIDADE</th><th>SERVO</th><th>ORIGEM</th></tr></thead><tbody id="readingRows"><tr class="empty-row"><td colspan="5">Aguardando a primeira mensagem do ESP32.</td></tr></tbody></table></div></section>
  <div class="section-head"><div><div class="eyebrow">04 / CONECTIVIDADE</div><h2>Central de conexão</h2></div><span class="sub">WebSocket seguro · WSS 8884</span></div>
- <section class="lower"><article class="connection card" id="conexao"><div class="connection-head"><div class="panel-head"><div><h3>Conectar ao HiveMQ Cloud</h3><p>Conexão ao vivo, sem enviar comandos ao ESP32.</p></div></div><span class="tag">MQTT 3.1.1</span></div><form id="mqttForm" autocomplete="off"><div class="form-grid"><div class="field wide"><label for="host">ENDEREÇO DO BROKER</label><input id="host" type="text" value="125e4c5cf1a84e15a472be4cda4c9761.s1.eu.hivemq.cloud" spellcheck="false" required></div><div class="field"><label for="username">USUÁRIO MQTT</label><input id="username" type="text" value="perabru2" required spellcheck="false" autocomplete="username"></div><div class="field"><label for="password">SENHA MQTT</label><div class="password-wrap"><input id="password" type="password" placeholder="Digite a senha do broker" required autocomplete="off"><button type="button" class="eye" id="showPassword" aria-label="Mostrar ou ocultar senha">◉</button></div></div><div class="field wide"><label for="topic">TÓPICO DE TELEMETRIA</label><input id="topic" value="projeto/controle_ar/telemetria" required spellcheck="false"></div></div><div class="form-actions"><button class="btn primary" type="submit" id="connectBtn">↗ Conectar agora</button><button class="btn danger" id="disconnectBtn" type="button" disabled>Desconectar</button><button class="btn" id="demoBtn" type="button">▶ Modo demonstração</button></div><div class="error" id="formError" role="alert"></div><p class="hint">A senha é usada apenas na memória desta aba, inclusive durante a reconexão, e não é salva nem embutida no HTML. Para publicar o site, use uma conta MQTT separada com permissão de <strong>leitura apenas</strong> nos tópicos necessários.</p></form></article>
+ <section class="lower"><article class="connection card" id="conexao"><div class="connection-head"><div class="panel-head"><div><h3>Conectar ao HiveMQ Cloud</h3><p>Conexão ao vivo com telemetria, status e ângulo do servo.</p></div></div><span class="tag">MQTT 3.1.1 · WSS 8884</span></div><form id="mqttForm" autocomplete="off"><div class="form-grid"><div class="field wide"><label for="host">ENDEREÇO DO BROKER</label><input id="host" type="text" value="f4eb2ac987ed4067b11a23b96558ea30.s1.eu.hivemq.cloud" spellcheck="false" required></div><div class="field"><label for="username">USUÁRIO MQTT</label><input id="username" type="text" value="perabru2" required spellcheck="false" autocomplete="username"></div><div class="field"><label for="password">SENHA MQTT</label><div class="password-wrap"><input id="password" type="password" value="123456789" placeholder="Digite a senha do broker" required autocomplete="off"><button type="button" class="eye" id="showPassword" aria-label="Mostrar ou ocultar senha">◉</button></div></div><div class="field wide"><label for="topic">FILTRO DE TÓPICOS MQTT</label><input id="topic" value="projeto/controle_ar/#" required spellcheck="false"></div></div><div class="form-actions"><button class="btn primary" type="submit" id="connectBtn">↗ Conectar agora</button><button class="btn danger" id="disconnectBtn" type="button" disabled>Desconectar</button><button class="btn" id="demoBtn" type="button">▶ Modo demonstração</button></div><div class="error" id="formError" role="alert"></div><p class="hint">O painel assina <strong>projeto/controle_ar/#</strong> e reconhece telemetria, status e ângulo do servo. Para publicar este site na internet, use uma conta MQTT separada com permissão de <strong>leitura apenas</strong>.</p></form></article>
  <article class="events card" id="eventos"><div class="panel-head"><div><h3>Atividade e conexão</h3><p>Eventos técnicos do sistema de pesquisa.</p></div><button id="csvBtn" type="button" class="btn" disabled>↓ CSV</button></div><ul id="eventList" class="event-list" aria-label="Histórico de eventos"><li><span class="event-mark neutral"></span><span class="event-copy">Painel pronto. Conecte ao HiveMQ ou inicie uma demonstração.</span><time class="event-time">--:--</time></li></ul></article></section>
  <footer class="footer"><span><strong>VitaSense Lab</strong> · ESP32 + DHT11 + HiveMQ Cloud</span><span>Protótipo educacional. Não destinado à avaliação ou ao controle de vias aéreas humanas.</span></footer>
 </main></div>
@@ -65,7 +65,7 @@
 
 'use strict';
 /* Cliente MQTT 3.1.1 mínimo implementado em JavaScript puro.
-   WebSocket binário TLS (WSS); subscribe/telemetria apenas; não publica comandos. */
+   WebSocket binário TLS (WSS); assina telemetria, status e ângulo; não publica comandos. */
 (() => {
  const $ = id => document.getElementById(id);
  const enc = new TextEncoder();
@@ -115,7 +115,15 @@
  }
  function connect(){
   let host,username,password,topic;
-  try{host=cleanHostname($('host').value);username=$('username').value.trim();password=$('password').value;topic=$('topic').value.trim();if(!username||!password||!topic||topic.includes('#')||topic.includes('+'))throw Error('Informe usuário, senha e um tópico sem curingas.');if(enc.encode(password).length>65535)throw Error('Senha demasiado longa.');}
+  try{
+    host=cleanHostname($('host').value);
+    username=$('username').value.trim();
+    password=$('password').value;
+    topic=$('topic').value.trim();
+    if(!username||!password||!topic)throw Error('Informe usuário, senha e o filtro de tópicos.');
+    if(!topic.startsWith('projeto/controle_ar/'))throw Error('Use um tópico dentro de projeto/controle_ar/.');
+    if(enc.encode(password).length>65535)throw Error('Senha demasiado longa.');
+   }
   catch(err){setError(err.message);return;}
   stop();resetSession();setError('');state.creds={host,username,password,topic};state.reconnects=0;const seq=state.seq;status('connecting');log('Conectando ao HiveMQ por WebSocket seguro…');openSocket(seq);
  }
@@ -162,7 +170,7 @@
    if(body.length<2||body[1]!==0){const reason=['aceito','protocolo incompatível','identificador rejeitado','broker indisponível','usuário ou senha inválidos','sem autorização'][body[1]]||'resposta inesperada';setError('Conexão MQTT recusada: '+reason+'.');log('Broker recusou conexão: '+reason,'bad');stop();return;}
    clearTimeout(state.connectTimer);state.connecting=false;state.reconnects=0;state.lastPing=0;
    const topics=[state.creds.topic,'projeto/controle_ar/status'].filter((x,i,a)=>a.indexOf(x)===i);
-   send(subscribeFrame(topics));status('stale','Conectado ao broker · aguardando leitura do ESP32');setError('');log('Autenticação aceita. Inscrevendo-se nos tópicos…','good');
+   send(subscribeFrame(topics));status('stale','Conectado ao broker · aguardando leitura do ESP32');setError('');log('Autenticação aceita. Assinando '+state.creds.topic+'…','good');
    state.keepAlive=setInterval(()=>{
     if(seq!==state.seq||state.ws?.readyState!==WebSocket.OPEN)return;
     if(state.lastPing&&Date.now()-state.lastPing>55000){log('Sem resposta ao PING MQTT; reconectando.','bad');state.ws.close();return;}
@@ -201,6 +209,24 @@
   function frame(now){const t=Math.min(1,(now-begin)/duration),ease=1-Math.pow(1-t,3);el.textContent=(start+(to-start)*ease).toFixed(digits).replace('.',',');if(t<1){const raf=requestAnimationFrame(frame);rafValues.set(id,{value:start+(to-start)*ease,raf});}else rafValues.set(id,{value:to});}
   frame(begin);
  }
+ function updateServoOnly(angulo){
+   const valor=Math.max(0,Math.min(180,Number(angulo)));
+   animateNumber('servo',valor,0);
+   $('servoGaugeNumber').textContent=Math.round(valor)+'°';
+   $('servoArc').setAttribute('stroke-dashoffset',(100*(1-valor/180)).toFixed(2));
+
+   const led=valor<=60?'VERDE':valor<=120?'AMARELO':'VERMELHO';
+   for(const [color,key] of [['VERDE','ledGreen'],['AMARELO','ledYellow'],['VERMELHO','ledRed']]){
+    $(key).classList.toggle('active',led===color);
+   }
+   $('servoFoot').textContent='LED '+led;
+
+   if(state.data){
+    state.data.servo=valor;
+    state.data.led=led;
+   }
+ }
+
  function ingest(data,simulated){
   state.data=data;state.history.push({...data,at:Date.now(),simulated});if(state.history.length>90)state.history.shift();
   animateNumber('temperature',data.temperatura,1);animateNumber('humidity',data.umidade,1);animateNumber('servo',data.servo,0);animateNumber('wifi',data.wifi_rssi,0);
@@ -258,6 +284,15 @@
   }
  },1000);
  $('clock').textContent=fmtTime(new Date());
+
+  // Conexão automática para uso local/demonstração.
+  // Se hospedar publicamente, remova a senha do HTML e este bloco.
+  setTimeout(()=>{
+   if($('host').value && $('username').value && $('password').value && $('topic').value){
+    connect();
+   }
+  },700);
+
 })();
 
 </script>
